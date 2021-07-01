@@ -10,6 +10,7 @@ function App() {
     <>
     <AuthContexProvider>
     <Router></Router>
+    {console.log(process.env.REACT_APP_Google)}
     </AuthContexProvider>
     </>
   );

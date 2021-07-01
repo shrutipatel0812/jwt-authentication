@@ -1,0 +1,25 @@
+body {
+  background-color: beige;
+}
+
+.google {
+  margin-right: 10px;
+  /* justify-content: center;
+  align-items: center; */
+}
+
+h4 {
+  display: flex;
+  color: #5a5a57;
+  font-size: medium;
+  font-style: italic;
+  flex-direction: row;
+}
+
+h4:before,
+h4:after {
+  content: "";
+  flex: 1 1;
+  border-bottom: 1px solid rgb(170, 166, 166);
+  margin: auto;
+}

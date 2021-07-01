@@ -2,6 +2,11 @@ import axios from 'axios'
 import React, { useContext,useState } from 'react'
 import { useHistory } from 'react-router';
 import AuthContext from '../context/AuthContext';
+import Button from '../css/Button.css'
+import LoginWithGoogle from './LoginWithGoogle'
+import LoginWithFacebook from './LoginWithFacebook';
+
+
 
 function Register() {
     const[email,setEmail]= useState("");
@@ -36,7 +41,7 @@ function Register() {
                     <div className="col-md-6 offset-md-3 col-xl-4 offset-xl-4">
                         <div className="card shadow">
                             <div className="card-body">
-                                <h5 className="card-title">Register</h5>
+                                <h3 className="card-title d-flex justify-content-center align-items-center">REGISTER</h3>
                                 <form onSubmit={register} className="validated-form" noValidate>
                                     <div className="mb-3">
                                         <label className="form-label" >Email</label>
@@ -62,7 +67,18 @@ function Register() {
                                         </input>
                                     </div>
                             
-                                    <button type="submit" className="btn btn-success btn-block"> Login</button>
+                                    <button type="submit" className="btn btn-dark btn-block"> Register</button>
+                                    <h4>OR</h4>
+                                    <h6 className="card-title d-flex justify-content-center align-items-center">LOGIN WITH</h6>
+                                    <div className="login d-flex justify-content-center align-items-center " >
+                            
+                           
+                            <LoginWithGoogle></LoginWithGoogle>
+                            <LoginWithFacebook></LoginWithFacebook>
+                           
+                        </div>
+                       
+                       
                                 </form>
                             </div>
                         </div>

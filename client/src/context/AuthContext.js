@@ -9,8 +9,11 @@ function AuthContexProvider(props) {
     const[username , SetUsername] = useState("");
 
     async function getLoggedIn(){
+        console.log("hii");
         const loggedInRes = await axios.get("http://localhost:5000/users/loggedIn");
+        console.log("auth "+ loggedInRes.data);
         setLoggedIn(loggedInRes.data);
+        
 
         const usernameRes = await axios.get("http://localhost:5000/users/username");
         SetUsername(usernameRes.data);
