@@ -2,6 +2,10 @@ const router = require("express").Router();
 const User = require("../models/usersModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_AUTH);
+const fetch= require('node-fetch');
+
 
 require("dotenv").config();
 
@@ -162,5 +166,146 @@ router.get("/logout", (req, res) => {
     })
     .send();
 });
+
+
+router.post("/googleLogin",async(req,res)=>{
+    const {tokenId} = req.body;
+    client.verifyIdToken({idToken:tokenId, audience:process.env.GOOGLE_AUTH})
+    .then(response =>{
+        const{email_verified, name,email}=response.payload;
+        console.log(response.payload);
+        console.log(email_verified);
+        if(email_verified){
+          console.log("email_verified");
+          User.findOne({email}).exec(async(err ,user)=>{
+            if(err){
+              return res.status(400).json({
+                error:"somthing went wrong"
+              })
+            }else{
+              if(user){
+                const token = jwt.sign(
+                  {
+                    user: user._id,
+                  },
+                  process.env.JWT_SECRET
+                );
+            
+                // send the token in a HTTP-only cookie
+                  console.log(token);
+                res.cookie("token", token, {
+                    httpOnly: true,
+                  }).send();
+                  
+              }else{
+                let password = email+ process.env.JWT_SECRET;
+                const salt = await bcrypt.genSalt();
+                const passwordHash = await bcrypt.hash(password, salt);
+                const newUser = new User({email,passwordHash});
+                newUser.save((err,data)=>{
+                  if(err){
+                    return res.status(400).json({
+                      error:"Somthing went wrong"
+                    })
+                  }
+                  const token = jwt.sign(
+                    {
+                      user: newUser._id,
+                    },
+                    process.env.JWT_SECRET
+                  );
+                  console.log("new user");
+                    res.cookie("token", token, {
+                      httpOnly: true,
+                    })
+                })
+              }
+            }
+          })
+        }else{
+          console.log("email not verified");
+        }
+    })
+})
+
+
+
+
+router.post("/facebookLogin",(req,res)=>{
+  console.log('FACEBOOK LOGIN REQ BODY', req.body);
+  const { userID, accessToken } = req.body;
+
+  const url = `https://graph.facebook.com/v2.11/${userID}/?fields=id,name,email&access_token=${accessToken}`;
+
+  return (
+    fetch(url, {
+      method: 'GET'
+    })
+      .then(response => response.json())
+      // .then(response => console.log(response))
+      .then(response => {
+        const { email, name } = response;
+        User.findOne({ email }).exec(async(err, user) => {
+          if(err){
+            return res.status(400).json({
+              error:"somthing went wrong"
+            })
+          }else{
+            if(user){
+              const token = jwt.sign(
+                {
+                  user: user._id,
+                },
+                process.env.JWT_SECRET
+              );
+          
+              // send the token in a HTTP-only cookie
+                console.log(token);
+              res
+                .cookie("token", token, {
+                  httpOnly: true,
+                 
+                })
+                .send();
+          } else {
+            let password = email+ process.env.JWT_SECRET;
+                const salt = await bcrypt.genSalt();
+                const passwordHash = await bcrypt.hash(password, salt);
+                const newUser = new User({email,passwordHash});
+                newUser.save((err,data)=>{
+                  if(err){
+                    return res.status(400).json({
+                      error:"Somthing went wrong"
+                    })
+                  }
+              const token = jwt.sign(
+                { user: newUser._id },
+                process.env.JWT_SECRET
+              );
+              res
+              .cookie("token", token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "none",
+              })
+              .send();
+            });
+           
+          }
+        }
+        });
+      })
+      .catch(error => {
+        res.json({
+          error: 'Facebook login failed. Try later'
+        });
+      })
+  );
+});
+
+
+
+
+
 
   module.exports = router;
